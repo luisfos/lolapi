@@ -26,6 +26,7 @@ class extractInfo():
             self.db = EUdb
             self.players = self.db.players
             self.matches = self.db.matches
+            self.builds = self.db.builds
         if region == 'na':
             self.api = RiotAPI.NAapi
         if region == 'kr':
@@ -53,8 +54,10 @@ class extractInfo():
         jsonObj = self.api.get_matchlist(pID)
         if 'matches' in jsonObj:
             for game in jsonObj['matches']:
-                x = {'timestamp':game['timestamp'], 'matchID':game['matchId'], 'season':game['season']}
-                self.matches.replace_one(x, x, upsert=True)
+                fil = {'timestamp':game['timestamp'], 'matchID':game['matchId']}
+                x = {'timestamp':game['timestamp'], 'matchID':game['matchId'],'used':False, 'season':game['season']}
+                #self.matches.replace_one(x, x, upsert=True)
+                self.matches.update_one(fil,{'$set': x},upsert=True)
 
     def build_byChamp(self):
         for match in db.matchDict['matches'].values():
@@ -72,7 +75,17 @@ class extractInfo():
         cursor = self.players.find({"tier":"challenger"})
         for player in cursor:
             self.match_list(player['pID'])
-            
+
+    def db_AddBuilds(self):
+        cursor = self.matches.find({'used':False}, snapshot=True)
+        for match in cursor:
+            #do stuff
+            self.readMatch()
+            #update
+            self.matches.update_one(match, {'$set': {'used':True}})
+        cursor.close()
+
+
     def readMatch(self, game):
         result = {}
         for key, val in game.items():
