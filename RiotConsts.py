@@ -42,8 +42,8 @@ MatchRoot = [
 MatchParts = [
     'spell1Id',
     'spell2Id',
-    'championId'
-    #'teamId'
+    'championId',
+    'teamId'
     #'masteries',
     #'runes'
 ]
@@ -59,7 +59,9 @@ MatchStats = [
     'item6',
     'kills',
     'deaths',
-    'assists'
+    'assists',
+    'goldEarned',
+    'totalDamageDealt',
 ]
 Items = [
     'item0',

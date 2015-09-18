@@ -19,6 +19,13 @@ EUdb = client.EUMeta
 #                    ("pName", pymongo.ASCENDING)],
 #                     unique=True)
 
+def dp(val, decplaces=2):
+    x = pow(10, decplaces)
+    y = pow(10, decplaces+1)
+    whole = int(val)
+    part = (round((val%1)*x))/x
+    return ((whole * y) + (part * y))/y
+
 class extractInfo():
     def __init__(self, region):
         if region == 'euw':
@@ -88,23 +95,86 @@ class extractInfo():
 
     def build_from_match(self, matchID):
         jsonObj = self.api.get_match_detail(matchID)
-        x = self.readMatch(jsonObj))
-        {
-        'build' : [x['item0'],x['item1'],x['item2'],x['item3'],x['item4'],x['item5']]}
+        x = self.readMatch(jsonObj)
+        y = self.processMatch(x)
+        pp.pprint(y)
+        
+        #{'championID': x['championId']
+        #'build' : [x['item0'],x['item1'],x['item2'],x['item3'],x['item4'],x['item5']]}
+        # score
 
     def readMatch(self, game):
-        result = {}
+        result = {'T1G':0,'T1K':0,'T1Dmg':0,'T1D':0,'T2G':0,'T2K':0,'T2D':0,'T2Dmg':0}
+        result['players']= []
+        #match info
         for key, val in game.items():
             if key in Consts.MatchRoot:
                 result[key] = val
+        #player info
         for champ in game['participants']:
+            champStats = {}            
+            #champ['championId']
+            if champ['teamId'] == 100:
+                result['T1G'] += champ['stats']['goldEarned']
+                result['T1K'] += champ['stats']['kills']
+                result['T1D'] += champ['stats']['deaths']
+                result['T1Dmg'] += champ['stats']['totalDamageDealt']
+            elif champ['teamId'] == 200:
+                result['T2G'] += champ['stats']['goldEarned']
+                result['T2K'] += champ['stats']['kills']
+                result['T2D'] += champ['stats']['deaths']
+                result['T2Dmg'] += champ['stats']['totalDamageDealt']
+
             for key,val in champ.items():
                 if key in Consts.MatchParts:
-                    result[key] = val
-            for key,val in champ['stats'].items():
+                    champStats[key] = val
+            for key,val in champ['stats'].items():                
                 if key in Consts.MatchStats:
-                    result[key] = val
+                    champStats[key] = val                    
+            result['players'].append(champStats)        
         return result
+
+    def processMatch(self, RM):
+        result = []
+        for champ in RM['players']:
+            if champ['teamId'] == 100:
+                Grat = float(champ['goldEarned']) / RM['T1G']*100
+                Krat = float(champ['kills'] + champ['assists']) / RM['T1K']*100
+                Dmgrat = float(champ['totalDamageDealt']) / RM['T1Dmg']*100
+                Drat = float(champ['deaths']) / RM['T1D']*100
+                KDrat= Krat-Drat
+                if champ['winner']==True:
+                    vic = 100
+                else:
+                    vic = 0
+                score= dp((0.35 * Grat)+(0.35 * Drat)+(0.25 * Krat)+(0.05 * vic))
+            elif champ['teamId']==200:
+                Grat = float(champ['goldEarned']) / RM['T2G']*100
+                Krat = float(champ['kills'] + champ['assists']) / RM['T2K']*100
+                Dmgrat = float(champ['totalDamageDealt']) / RM['T2Dmg']*100
+                Drat = float(champ['deaths']) / RM['T2D']*100
+                KDrat= Krat-Drat
+                
+                if champ['winner']==True:
+                    vic = 100
+                else:
+                    vic = 0
+                    
+                score= dp((0.35 * Grat)+(0.35 * Dmgrat)+(0.25 * KDrat)+(0.05 * vic))
+                
+            bld = [champ['item0'],champ['item1'],champ['item2'],champ['item3'],champ['item4'],champ['item5']]
+            result.append({
+                'championID':champ['championId'],
+                'build': bld,
+                'score':score,
+                #'G':Grat,
+                #'K':Krat,
+                #'D':Drat,
+                #'Dmg':Dmgrat,
+                'vic':vic
+            })             
+        return result
+                
 
     def readBuild(self, match):
         bList = []
