@@ -36,19 +36,20 @@ PLAYERDict = {
 }
 
 MatchRoot = [
-    'matchId'
+    'matchDuration',
+    'matchVersion'
 ]
 MatchParts = [
     'spell1Id',
     'spell2Id',
-    'championId',
-    'teamId',
-    'masteries',
-    'runes'
+    'championId'
+    #'teamId'
+    #'masteries',
+    #'runes'
 ]
 MatchStats = [
     'winner',
-    'champLevel',
+    #'champLevel',
     'item0',
     'item1',
     'item2',
@@ -70,5 +71,3 @@ Items = [
     'item6'
 ]
 
-        
-        

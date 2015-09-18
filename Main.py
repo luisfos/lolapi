@@ -77,26 +77,33 @@ class extractInfo():
             self.match_list(player['pID'])
 
     def db_AddBuilds(self):
-        cursor = self.matches.find({'used':False}, snapshot=True)
+        cursor = self.matches.find({'used':False})
+
         for match in cursor:
             #do stuff
-            self.readMatch()
+            self.build_from_match(['matchID'])
             #update
             self.matches.update_one(match, {'$set': {'used':True}})
-        cursor.close()
+        #cursor.close()
 
+    def build_from_match(self, matchID):
+        jsonObj = self.api.get_match_detail(matchID)
+        x = self.readMatch(jsonObj))
+        {
+        'build' : [x['item0'],x['item1'],x['item2'],x['item3'],x['item4'],x['item5']]}
 
     def readMatch(self, game):
         result = {}
         for key, val in game.items():
             if key in Consts.MatchRoot:
                 result[key] = val
-        for key,val in game['participants'][0].items():
-            if key in Consts.MatchParts:
-                result[key] = val
-        for key,val in game['participants'][0]['stats'].items():
-            if key in Consts.MatchStats:
-                result[key] = val
+        for champ in game['participants']:
+            for key,val in champ.items():
+                if key in Consts.MatchParts:
+                    result[key] = val
+            for key,val in champ['stats'].items():
+                if key in Consts.MatchStats:
+                    result[key] = val
         return result
 
     def readBuild(self, match):

@@ -17,10 +17,10 @@ class tokenBucket:
         diff = self.currenttime - self.lasttime
         
             
-        print 'time diff: ' +str(diff)
+        #print 'time diff: ' +str(diff)
         if diff >= self.rate:
             self.tokens += int(diff / self.rate)
-            print 'new tokens: ' +str(int(diff / self.rate))
+            #print 'new tokens: ' +str(int(diff / self.rate))
             self.lasttime = time()
         
     def update(self):

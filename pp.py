@@ -13,3 +13,12 @@ url = 'https://euw.api.pvp.net/api/lol/euw/v2.2/match/2298045633?api_key=f4bcda5
 x = requests.get(url)
 pp.pprint(x.json())
 #print x.json()
+
+for thing in x['participants']
+    thing['championId']
+    thing['spell1Id']
+    thing['spell2Id']
+    thing['stats']['assists']
+    thing['stats']['deaths']
+    thing['stats']['kills']
+    thing['stats']['assists']
