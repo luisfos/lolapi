@@ -14,6 +14,7 @@ client = MongoClient()
 EUdb = client.EUMeta
 #players = EUdb.players
 # = EUdb.matches
+FAM = EUdb.builds
 #players.create_index({"pID":1, "pName":1}, {unique:True})
 #players.create_index([("pID", pymongo.ASCENDING),
 #                    ("pName", pymongo.ASCENDING)],
@@ -33,7 +34,7 @@ class extractInfo():
             self.db = EUdb
             self.players = self.db.players
             self.matches = self.db.matches
-            self.builds = self.db.builds
+            self.builds = FAM
         if region == 'na':
             self.api = RiotAPI.NAapi
         if region == 'kr':
@@ -98,6 +99,16 @@ class extractInfo():
         x = self.readMatch(jsonObj)
         y = self.processMatch(x)
         pp.pprint(y)
+        for champ in y:
+            doc = {"champ['championID'].$.'build'":champ['build'],
+                   "champ['championID'].$.'matchID'":matchID,
+                   "champ['championID'].$.'score'":champ['score']}
+            #self.builds.update({'x'}, {'$set': {"x.$.'score'": champ['score']}})
+            self.builds.update_one(
+                {'championID' : champ['championID']},
+                {'$push': {"sets": {'build':champ['build'], 'score' :champ['score']} }},
+                upsert=True
+            )
         
         #{'championID': x['championId']
         #'build' : [x['item0'],x['item1'],x['item2'],x['item3'],x['item4'],x['item5']]}
@@ -167,6 +178,7 @@ class extractInfo():
                 'championID':champ['championId'],
                 'build': bld,
                 'score':score,
+                'matchID':RM['matchId'],
                 #'G':Grat,
                 #'K':Krat,
                 #'D':Drat,

@@ -37,7 +37,8 @@ PLAYERDict = {
 
 MatchRoot = [
     'matchDuration',
-    'matchVersion'
+    'matchVersion',
+    'matchId'
 ]
 MatchParts = [
     'spell1Id',
