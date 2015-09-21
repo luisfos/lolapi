@@ -20,6 +20,9 @@ FAM = EUdb.builds
 #                    ("pName", pymongo.ASCENDING)],
 #                     unique=True)
 
+def resetUsed():
+    EUdb.matches.update_many({'used':True}, {'$set':{'used':False}})
+
 def dp(val, decplaces=2):
     x = pow(10, decplaces)
     y = pow(10, decplaces+1)
@@ -34,7 +37,8 @@ class extractInfo():
             self.db = EUdb
             self.players = self.db.players
             self.matches = self.db.matches
-            self.builds = FAM
+            self.builds = self.db.builds
+            self.analysed = self.db.analysed
         if region == 'na':
             self.api = RiotAPI.NAapi
         if region == 'kr':
@@ -86,13 +90,11 @@ class extractInfo():
 
     def db_AddBuilds(self):
         cursor = self.matches.find({'used':False})
-
         for match in cursor:
             #do stuff
-            self.build_from_match(['matchID'])
+            self.build_from_match(match['matchID'])
             #update
             self.matches.update_one(match, {'$set': {'used':True}})
-        #cursor.close()
 
     def build_from_match(self, matchID):
         jsonObj = self.api.get_match_detail(matchID)
@@ -100,13 +102,13 @@ class extractInfo():
         y = self.processMatch(x)
         pp.pprint(y)
         for champ in y:
-            doc = {"champ['championID'].$.'build'":champ['build'],
-                   "champ['championID'].$.'matchID'":matchID,
-                   "champ['championID'].$.'score'":champ['score']}
-            #self.builds.update({'x'}, {'$set': {"x.$.'score'": champ['score']}})
             self.builds.update_one(
                 {'championID' : champ['championID']},
-                {'$push': {"sets": {'build':champ['build'], 'score' :champ['score']} }},
+                {'$addToSet':
+                     {"sets":
+                        {'build':champ['build'],
+                         'score' :champ['score'],
+                         'matchID':champ['matchID']}}},
                 upsert=True
             )
         
@@ -122,6 +124,7 @@ class extractInfo():
             if key in Consts.MatchRoot:
                 result[key] = val
         #player info
+        #pp.pprint(game)
         for champ in game['participants']:
             champStats = {}            
             #champ['championId']
@@ -148,31 +151,38 @@ class extractInfo():
     def processMatch(self, RM):
         result = []
         for champ in RM['players']:
+            Krat = 0.0
+            Drat = 0.0
+            Dmgrat = 0.0
             if champ['teamId'] == 100:
+                if RM['T1K'] != 0:
+                    Krat = float(champ['kills'] + champ['assists']) / RM['T1K']*100
+                if RM['T1Dmg']!=0:
+                    Dmgrat = float(champ['totalDamageDealt']) / RM['T1Dmg']*100
+                if RM['T1D']!=0:
+                    Drat = float(champ['deaths']) / RM['T1D']*100
+
                 Grat = float(champ['goldEarned']) / RM['T1G']*100
-                Krat = float(champ['kills'] + champ['assists']) / RM['T1K']*100
-                Dmgrat = float(champ['totalDamageDealt']) / RM['T1Dmg']*100
-                Drat = float(champ['deaths']) / RM['T1D']*100
                 KDrat= Krat-Drat
                 if champ['winner']==True:
                     vic = 100
                 else:
                     vic = 0
-                score= dp((0.35 * Grat)+(0.35 * Drat)+(0.25 * Krat)+(0.05 * vic))
             elif champ['teamId']==200:
+                if RM['T2K']!=0:
+                    Krat = float(champ['kills'] + champ['assists']) / RM['T2K']*100
+                if RM['T2Dmg']!=0:
+                    Dmgrat = float(champ['totalDamageDealt']) / RM['T2Dmg']*100
+                if RM['T2D']!=0:
+                    Drat = float(champ['deaths']) / RM['T2D']*100
                 Grat = float(champ['goldEarned']) / RM['T2G']*100
-                Krat = float(champ['kills'] + champ['assists']) / RM['T2K']*100
-                Dmgrat = float(champ['totalDamageDealt']) / RM['T2Dmg']*100
-                Drat = float(champ['deaths']) / RM['T2D']*100
                 KDrat= Krat-Drat
-                
                 if champ['winner']==True:
                     vic = 100
                 else:
                     vic = 0
-                    
-                score= dp((0.35 * Grat)+(0.35 * Dmgrat)+(0.25 * KDrat)+(0.05 * vic))
-                
+
+            score= dp((0.35 * Grat)+(0.35 * Dmgrat)+(0.25 * KDrat)+(0.05 * vic))
             bld = [champ['item0'],champ['item1'],champ['item2'],champ['item3'],champ['item4'],champ['item5']]
             result.append({
                 'championID':champ['championId'],
@@ -186,7 +196,16 @@ class extractInfo():
                 'vic':vic
             })             
         return result
-                
+
+    def db_analyse_builds(self):
+        self.builds.fin
+
+    def distance_by_champ(self, championSet):
+        results={}
+        for bld in championSet:
+            bld['build']
+            distanc
+
 
     def readBuild(self, match):
         bList = []

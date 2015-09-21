@@ -15,15 +15,23 @@ class cAPI(object):
         for key, value in extras.items():
            if key not in args:
                args[key] = value
-        
-        r = requests.get(
-            Consts.URL[baseURL].format(
-                proxy = self.region,
-                region= self.region,
-                url=api_url
-                ),
-            params=args
-            )
+        while True:
+            print 'IN WHILE'
+            r = requests.get(
+                Consts.URL[baseURL].format(
+                    proxy = self.region,
+                    region= self.region,
+                    url=api_url
+                    ),
+                params=args
+                )
+            if r.json() != {'status': {'message': 'Rate limit exceeded', 'status_code': 429}}:
+                print 'Response received'
+                break
+            else:
+                print 'Rate limit exceeded, retrying...'
+                RL.rateLimit.update()
+                continue
         print r.url
         return r.json()
 
