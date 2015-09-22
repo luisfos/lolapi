@@ -4,6 +4,7 @@ import json
 #import requests
 import RiotConsts as Consts
 import pprint
+import Analyse
 #import time
 #import timestamp
 from pymongo import MongoClient
@@ -198,13 +199,21 @@ class extractInfo():
         return result
 
     def db_analyse_builds(self):
-        self.builds.fin
+        cursor = self.builds.find()
 
-    def distance_by_champ(self, championSet):
-        results={}
-        for bld in championSet:
-            bld['build']
-            distanc
+    def distance_by_champ(self, championID):
+        cursor = self.builds.find_one({'championID':championID})['sets']
+        pp.pprint(cursor)
+        for bld in cursor:
+            EDSum = 0
+            focus = bld['build']
+            for other in cursor:
+                if other is not bld:
+                    EDSum += Analyse.distance(focus, other['build'])
+            print bld
+            self.builds.update_one(bld, {'$set':{'sets.$.distance':EDSum}})
+
+
 
 
     def readBuild(self, match):
