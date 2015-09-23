@@ -1,0 +1,61 @@
+* {
+    margin:0;
+}
+h1
+    {
+    font-family: "Verdana", "sans-serif";
+    font-size:36px;
+    font-weight:bold;
+    color: white;
+    padding-top: 20px;
+    padding-bottom: 60px;
+    }
+
+div.focus {
+    border-right: none;
+    text-align:center;
+}
+div.comboSearch {
+    position: relative;
+    display: block;
+    margin: auto;
+}
+
+
+
+.topside {
+    background-color: #29A9E7;
+    padding-top: 100px;
+    padding-bottom: 100px;
+}
+
+.searchSprite{
+    background-image: url(sbicon.png);
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 18px;
+    height: 18px;
+    display: inline-block;
+    text-indent: -9999px;
+}
+input.champSearch {
+    padding: 12px 40px 10px 20px;    
+    border: none;
+    border-radius: 7px 0 0 7px;
+}
+button.searchbutton {
+    border-radius: 0 7px 7px 0;
+    border: none;
+    padding: 12px 15px 10px 10px;
+    position: relative;
+    left: -10px;
+    /* top: -3px; */
+    display: inline-block;
+    background-color: white;
+}
+
+.combo {
+    font-size:18px;
+    border:none;
+    outline:none;
+}
