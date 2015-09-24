@@ -30,7 +30,7 @@ div.comboSearch {
 }
 
 .searchSprite{
-    background-image: url(sbicon.png);
+    background-image: url(../icons/sbicon.png);
     background-repeat: no-repeat;
     background-size: contain;
     width: 18px;
@@ -58,4 +58,8 @@ button.searchbutton {
     font-size:18px;
     border:none;
     outline:none;
+}
+
+footer {
+
 }
