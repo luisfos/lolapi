@@ -12,6 +12,16 @@
             </list>
           </option>
         </ServerConfiguration>
+        <ServerConfiguration>
+          <option name="label" value="OpenShift" />
+          <option name="password" value="P47x3dYlaRLp" />
+          <option name="serverUrls">
+            <list>
+              <option value="127.2.245.2:27017" />
+            </list>
+          </option>
+          <option name="username" value="admin" />
+        </ServerConfiguration>
       </list>
     </option>
     <option name="shellPath" value="C:\Program Files\MongoDB\Server\3.0\bin\mongo.exe" />

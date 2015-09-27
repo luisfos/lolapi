@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html ng-app="myApp">
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" typ"text/css" href="public/styles/index.css">
@@ -7,32 +7,56 @@
     
 </head>
 <body>
-    <script src=https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/!jquery.min.js"></script>
     <script src= "http://ajax.googleapis.com/ajax/libs/angularjs/1.3.14/angular.min.js"></script>
 
+    <div id="wrapper">
+        <div id="header"></div>
+        <div id="content">
+            <div class="focus">
+                <h1>Off Meta</h1>
+                <form class="searchForm">
+                <div class="comboSearch">
+                    <input type="text" class="champSearch combo" placeholder="Champion Name" autocomplete="off">
+                    <button id="button" class="searchbutton combo">
+                        <i class="searchSprite">Search</i>
+                    </button>
+                </div>
+                </form>
+            </div>
+            <div ng-controller="myCtrl">
+            <form name="Show">
+            <input name="fam" type="text" value="0">
+            <input name="lam" type="text" value="0">
+        </form>
+            <div class="fancychamps">
+                <div class="img" id="bl1"></div>
+                <div class="img" id="bl2"></div>
+                <div class="img" id="bl3"></div>
+                <div class="img" id="bl4"></div>
+                <div class="img" id="bl5"></div>
+                <div class="img" id="bl6"></div>
+                <div class="img" id="bl7"></div>                
+            </div>
+        </div>
+        <div id="footer">
+            <div class="footerText">
+                <p>Offmeta.gg is not endorsed by Riot Games and does not reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
+                </p>
+            </div>
+        </div>
+        <script>
+        document.captureEvents(Event.MOUSEMOVE)
+        document.onmousemove = getXY;
+        var tempX = 0;
+        var tempY = 0;
+        function getXY(e){
+                tempX = e.pageX
+                tempY = e.pageY
 
-    <div class="all">
-        <div class="menu">
-        </div>
-        <div class="topside">
-        <div class="focus">
-        <h1>Off Meta</h1>
-        <div class="comboSearch">
-            <input type="text" class="champSearch combo" placeholder="Champion Name" autocomplete="off">
-            <button id="button" class="searchbutton combo">
-                <i class="searchSprite">Search</i>
-            </button>
-        </div>
-        </div>
-        </div>
-    </div>
+                document.Show.fam.value = tempX
+                document.Show.lam.value = tempX
+        }
+        </script>
 
-    <script>
- 
-    // Your code goes here.
- 
-    </script>
 </body>
-<footer>offmeta.gg isn't endorsed by Riot Games and doesn't reflect the views or opinions of Riot Games or anyone officially involved in producing or managing League of Legends. League of Legends and Riot Games are trademarks or registered trademarks of Riot Games, Inc. League of Legends © Riot Games, Inc.
-</footer>
 </html>

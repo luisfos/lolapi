@@ -2,6 +2,7 @@ import RiotAPI
 #import LolClasses as LC
 import json
 #import requests
+from myflaskapp import client
 import RiotConsts as Consts
 import pprint
 import Analyse
@@ -11,7 +12,7 @@ from pymongo import MongoClient
 import pymongo
 #create index on init
 pp = pprint.PrettyPrinter(indent=3)
-client = MongoClient()
+#client = MongoClient()
 EUdb = client.EUMeta
 #players = EUdb.players
 # = EUdb.matches
@@ -57,12 +58,6 @@ class extractInfo():
             x = {'pID':key['playerOrTeamId'], 'pName':key['playerOrTeamName'], 'tier':'master'}
             self.players.replace_one(x, x, upsert=True)
 
-    def match_PlayerHistory(self, pId):
-        jsonObj = RiotAPI.api.get_matchhistory(pId)
-        for game in jsonObj['matches']:
-            extract = self.readMatch(game)
-            db.matchDict['matches'][str(pId)+'_'+str(game['matchId'])] = extract
-
     def match_list(self, pID):
         jsonObj = self.api.get_matchlist(pID)
         if 'matches' in jsonObj:
@@ -71,18 +66,6 @@ class extractInfo():
                 x = {'timestamp':game['timestamp'], 'matchID':game['matchId'],'used':False, 'season':game['season']}
                 #self.matches.replace_one(x, x, upsert=True)
                 self.matches.update_one(fil,{'$set': x},upsert=True)
-
-    def build_byChamp(self):
-        for match in db.matchDict['matches'].values():
-            champ, build = self.readBuild(match)
-            champEx = False
-            for cKey in db.buildDict['champion'].keys():
-                if champ == cKey:
-                    db.buildDict['champion'][cKey].append(build)
-                    champEx = True
-            if champEx == False:
-                db.buildDict['champion'][champ]= [build]
-            #self.buildDict['champion'].append({champ : [build]})
 
     def db_AddPlayerMatches(self):
         cursor = self.players.find({"tier":"challenger"})
@@ -185,6 +168,7 @@ class extractInfo():
 
             score= dp((0.35 * Grat)+(0.35 * Dmgrat)+(0.25 * KDrat)+(0.05 * vic))
             bld = [champ['item0'],champ['item1'],champ['item2'],champ['item3'],champ['item4'],champ['item5']]
+            bld = [item for item in bld if item !=0]
             result.append({
                 'championID':champ['championId'],
                 'build': bld,
@@ -200,18 +184,21 @@ class extractInfo():
 
     def db_analyse_builds(self):
         cursor = self.builds.find()
+        for champ in cursor:
+            self.distance_by_champ(champ['championID'])
 
     def distance_by_champ(self, championID):
         cursor = self.builds.find_one({'championID':championID})['sets']
-        pp.pprint(cursor)
-        for bld in cursor:
+        for group in cursor:
             EDSum = 0
-            focus = bld['build']
+            focus = group['build']
+            focus = [item for item in focus if item !=0]
             for other in cursor:
-                if other is not bld:
+                if other is not group:
                     EDSum += Analyse.distance(focus, other['build'])
-            print bld
-            self.builds.update_one(bld, {'$set':{'sets.$.distance':EDSum}})
+            #print str(focus) + "     score:" + str(EDSum)
+            self.builds.update_one({'sets':{'$elemMatch':{'matchID':group['matchID']}}},
+                                   {'$set':{'sets.$.distance':EDSum}})
 
 
 
@@ -256,5 +243,12 @@ def main():
 ctrl = extractInfo('euw')
 
 
-
+#get players/challengers (more than 200 as ppl drop out/enter)
+#db_addPlayerMatches
+#	> match_list (player ID)
+#db_AddBuilds
+	#> build_from_match (match ID)
+	#	> readMatch (match detail)
+	#	> processMatch (readMatch)
+	#> update match (used = True)
 
