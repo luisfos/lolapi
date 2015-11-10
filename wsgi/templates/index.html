@@ -2,7 +2,7 @@
 <html ng-app="myApp">
 <head>
     <meta charset="utf-8">
-    <link rel="stylesheet" typ"text/css" href="public/styles/index.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles/index.css') }}">
     <title>Test</title>
     
 </head>
@@ -23,20 +23,6 @@
                 </div>
                 </form>
             </div>
-            <div ng-controller="myCtrl">
-            <form name="Show">
-            <input name="fam" type="text" value="0">
-            <input name="lam" type="text" value="0">
-        </form>
-            <div class="fancychamps">
-                <div class="img" id="bl1"></div>
-                <div class="img" id="bl2"></div>
-                <div class="img" id="bl3"></div>
-                <div class="img" id="bl4"></div>
-                <div class="img" id="bl5"></div>
-                <div class="img" id="bl6"></div>
-                <div class="img" id="bl7"></div>                
-            </div>
         </div>
         <div id="footer">
             <div class="footerText">
@@ -45,17 +31,6 @@
             </div>
         </div>
         <script>
-        document.captureEvents(Event.MOUSEMOVE)
-        document.onmousemove = getXY;
-        var tempX = 0;
-        var tempY = 0;
-        function getXY(e){
-                tempX = e.pageX
-                tempY = e.pageY
-
-                document.Show.fam.value = tempX
-                document.Show.lam.value = tempX
-        }
         </script>
 
 </body>

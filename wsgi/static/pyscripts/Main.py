@@ -1,22 +1,24 @@
 import RiotAPI
-#import LolClasses as LC
-import json
-#import requests
-from myflaskapp import client
+#from ..myflaskapp import client
 import RiotConsts as Consts
 import pprint
 import Analyse
+import os
 #import time
 #import timestamp
 from pymongo import MongoClient
 import pymongo
 #create index on init
 pp = pprint.PrettyPrinter(indent=3)
-#client = MongoClient()
+
+
+if __name__ == "__main__":
+    client = MongoClient()
+else:
+    client = MongoClient()
+    #client = pymongo.MongoClient(os.environ['OPENSHIFT_MONGODB_DB_URL'])
+
 EUdb = client.EUMeta
-#players = EUdb.players
-# = EUdb.matches
-FAM = EUdb.builds
 #players.create_index({"pID":1, "pName":1}, {unique:True})
 #players.create_index([("pID", pymongo.ASCENDING),
 #                    ("pName", pymongo.ASCENDING)],
@@ -37,14 +39,17 @@ class extractInfo():
         if region == 'euw':
             self.api = RiotAPI.EUapi
             self.db = EUdb
-            self.players = self.db.players
-            self.matches = self.db.matches
-            self.builds = self.db.builds
-            self.analysed = self.db.analysed
+
         if region == 'na':
             self.api = RiotAPI.NAapi
+            self.db = NAdb
         if region == 'kr':
             self.api = RiotAPI.KRapi
+            self.db = KRdb
+        self.players = self.db.players
+        self.matches = self.db.matches
+        self.builds = self.db.builds
+        self.analysed = self.db.analysed
         
     def players_AddChallenger(self):
         jsonObj = self.api.get_league_challenger()      
@@ -183,24 +188,29 @@ class extractInfo():
         return result
 
     def db_analyse_builds(self):
-        cursor = self.builds.find()
-        for champ in cursor:
-            self.distance_by_champ(champ['championID'])
+        cursor = ctrl.builds.find({},{'championID':1, '_id':0})
+        for champ in cursor.distinct('championID'):
+            print champ
+            self.distance_by_champ(champ)
 
     def distance_by_champ(self, championID):
+        cursor = self.builds.find_one({'championID':championID})
+        cursorGroup = cursor['sets']
+        if len(cursorGroup) > 1:
+            for group in cursorGroup:
+                EDSum = 0
+                focus = group['build']
+                focus = [item for item in focus if item !=0]
+                for other in cursorGroup:
+                    if other is not group:
+                        EDSum += Analyse.distance(focus, other['build'])
+                print str(focus) + "     score:" + str(EDSum)
+                self.builds.update_one({'sets':{'$elemMatch':{'matchID':group['matchID']}}},
+                                       {'$set':{'sets.$.distance':EDSum}})
+
+    def min_distance(self, championID):
         cursor = self.builds.find_one({'championID':championID})['sets']
-        for group in cursor:
-            EDSum = 0
-            focus = group['build']
-            focus = [item for item in focus if item !=0]
-            for other in cursor:
-                if other is not group:
-                    EDSum += Analyse.distance(focus, other['build'])
-            #print str(focus) + "     score:" + str(EDSum)
-            self.builds.update_one({'sets':{'$elemMatch':{'matchID':group['matchID']}}},
-                                   {'$set':{'sets.$.distance':EDSum}})
-
-
+        
 
 
     def readBuild(self, match):
@@ -229,13 +239,6 @@ class extractInfo():
         #str(champId) : builds[[k for k, v in results.iteritems() if v == min_val][0]] }
 
 
-def main():
-    api = cAPI(key)
-    #r = api.get_summoner_by_name('Luijee')
-    #print r
-    #x = api.get_matches(36298701)
-    #print x
-    
 
 
 
